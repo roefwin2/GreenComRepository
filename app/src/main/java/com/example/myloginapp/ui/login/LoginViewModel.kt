@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 
 class LoginViewModel : ViewModel() {
 
-    private val _loginState = MutableLiveData<LoginScreen>()
+    private val _loginState = MutableLiveData<LoginScreen>(LoginScreen.FormInput(Pair("",false),Pair("",false)))
     val loginState: LiveData<LoginScreen> = _loginState
 
 

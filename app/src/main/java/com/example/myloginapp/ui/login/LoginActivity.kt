@@ -8,6 +8,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -35,47 +36,18 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
 
-        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
-            val loginState = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid
-
-            if (loginState.usernameError != null) {
-                username.error = getString(loginState.usernameError)
-            }
-            if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
-            }
+        loginViewModel.loginState.observe(this@LoginActivity, {
+            processLoginScreen(it)
         })
-
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-            val loginResult = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
-            }
-            if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
-            }
-            setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
-        })
-
         username.afterTextChanged {
-            loginViewModel.loginDataChanged(
-                username.text.toString(),
-                password.text.toString()
+            loginViewModel.changeEmail(
+                username.text.toString()
             )
         }
 
         password.apply {
             afterTextChanged {
-                loginViewModel.loginDataChanged(
-                    username.text.toString(),
+                loginViewModel.changePassword(
                     password.text.toString()
                 )
             }
@@ -84,8 +56,6 @@ class LoginActivity : AppCompatActivity() {
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
                         loginViewModel.login(
-                            username.text.toString(),
-                            password.text.toString()
                         )
                 }
                 false
@@ -93,24 +63,30 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+                loginViewModel.login()
             }
         }
     }
 
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-            applicationContext,
-            "$welcome $displayName",
-            Toast.LENGTH_LONG
-        ).show()
+    private fun processLoginScreen(loginScreen: LoginScreen?) {
+       when(loginScreen){
+           is LoginScreen.FormInput -> processUIFormInput(loginScreen)
+           LoginScreen.Loading -> TODO()
+           null -> TODO()
+       }
     }
 
-    private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
+    private fun processUIFormInput(formInput: LoginScreen.FormInput) {
+        when(formInput.emailInput.second){
+            false -> binding.username.error = "error"
+            else -> {}
+        }
+        when(formInput.passwordInput.second){
+            false -> binding.username.error = "error"
+            else -> {}
+
+        }
+        binding.login.isEnabled = true
     }
 }
 
