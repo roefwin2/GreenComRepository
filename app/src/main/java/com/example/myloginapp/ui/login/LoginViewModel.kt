@@ -1,41 +1,39 @@
 package com.example.myloginapp.ui.login
 
+import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import android.util.Patterns
-import com.example.myloginapp.data.LoginRepository
-import com.example.myloginapp.data.Result
 
-import com.example.myloginapp.R
+class LoginViewModel : ViewModel() {
 
-class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
+    private val _loginState = MutableLiveData<LoginScreen>()
+    val loginState: LiveData<LoginScreen> = _loginState
 
-    private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
 
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult> = _loginResult
-
-    fun login(username: String, password: String) {
-        // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
-
-        if (result is Result.Success) {
-            _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+    fun login() {
+        val state = loginState.value
+        if (state is LoginScreen.FormInput) {
+            val validatedEmail = state.emailInput.first
+            val validatedPassword = state.passwordInput.first
+            _loginState.value = state.copy(
+                emailInput = Pair(validatedEmail, isUserNameValid(validatedEmail)),
+                passwordInput = Pair(validatedPassword, isPasswordValid(validatedPassword))
+            )
         }
     }
 
-    fun loginDataChanged(username: String, password: String) {
-        if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
-        } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
-        } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+    fun changeEmail(email: String) {
+        val state = loginState.value
+        if (state is LoginScreen.FormInput) {
+            _loginState.value = state.copy(emailInput = Pair(email, false))
+        }
+    }
+
+    fun changePassword(password: String) {
+        val state = loginState.value
+        if (state is LoginScreen.FormInput) {
+            _loginState.value = state.copy(passwordInput = Pair(password, false))
         }
     }
 
@@ -50,6 +48,16 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
+        return password.length > 8
+    }
+}
+
+sealed class LoginScreen {
+    object Loading : LoginScreen()
+    data class FormInput(
+        val emailInput: Pair<String, Boolean>,
+        val passwordInput: Pair<String, Boolean>
+    ) : LoginScreen() {
+        val isValidForm get() = emailInput.second && passwordInput.second
     }
 }
