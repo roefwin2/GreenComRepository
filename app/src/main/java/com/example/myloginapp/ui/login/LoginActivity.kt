@@ -1,21 +1,15 @@
 package com.example.myloginapp.ui.login
 
-import android.app.Activity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.myloginapp.databinding.ActivityLoginBinding
-
-import com.example.myloginapp.R
 
 class LoginActivity : AppCompatActivity() {
 
@@ -69,24 +63,32 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun processLoginScreen(loginScreen: LoginScreen?) {
-       when(loginScreen){
-           is LoginScreen.FormInput -> processUIFormInput(loginScreen)
-           LoginScreen.Loading -> TODO()
-           null -> TODO()
-       }
+        when (loginScreen) {
+            is LoginScreen.InitState -> {
+            }
+            is LoginScreen.FormInput -> processUIFormInput(loginScreen)
+            LoginScreen.Loading -> TODO()
+            null -> TODO()
+        }
     }
 
     private fun processUIFormInput(formInput: LoginScreen.FormInput) {
-        when(formInput.emailInput.second){
-            false -> binding.username.error = "error"
-            else -> {}
-        }
-        when(formInput.passwordInput.second){
-            false -> binding.username.error = "error"
-            else -> {}
+        binding.loading.visibility = View.INVISIBLE
 
+        when (formInput.emailInput.second) {
+            false -> binding.username.error = "error email"
+            else -> {}
         }
-        binding.login.isEnabled = true
+        when (formInput.passwordInput.second) {
+            false -> binding.password.error = "error password"
+            else -> {}
+        }
+
+        loginViewModel.resetState()
+
+        if(formInput.isValidForm){
+            Toast.makeText(applicationContext,"Login successful",Toast.LENGTH_LONG).show()
+        }
     }
 }
 

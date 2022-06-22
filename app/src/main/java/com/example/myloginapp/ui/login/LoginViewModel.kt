@@ -7,43 +7,48 @@ import androidx.lifecycle.ViewModel
 
 class LoginViewModel : ViewModel() {
 
-    private val _loginState = MutableLiveData<LoginScreen>(LoginScreen.FormInput(Pair("",false),Pair("",false)))
+    private val _loginState = MutableLiveData<LoginScreen>(LoginScreen.InitState("", ""))
     val loginState: LiveData<LoginScreen> = _loginState
 
 
     fun login() {
         val state = loginState.value
-        if (state is LoginScreen.FormInput) {
-            val validatedEmail = state.emailInput.first
-            val validatedPassword = state.passwordInput.first
-            _loginState.value = state.copy(
+        state?.let { state ->
+            val validatedEmail = state.email
+            val validatedPassword = state.password
+            _loginState.value = LoginScreen.FormInput(
                 emailInput = Pair(validatedEmail, isUserNameValid(validatedEmail)),
                 passwordInput = Pair(validatedPassword, isPasswordValid(validatedPassword))
             )
         }
     }
 
+    fun resetState() {
+        val state = loginState.value
+        state?.let {
+            if (state is LoginScreen.FormInput) {
+                _loginState.value = LoginScreen.InitState(state.email, state.password)
+            }
+        }
+    }
+
     fun changeEmail(email: String) {
         val state = loginState.value
-        if (state is LoginScreen.FormInput) {
-            _loginState.value = state.copy(emailInput = Pair(email, false))
+        if (state is LoginScreen.InitState) {
+            _loginState.value = state.copy(email = email)
         }
     }
 
     fun changePassword(password: String) {
         val state = loginState.value
-        if (state is LoginScreen.FormInput) {
-            _loginState.value = state.copy(passwordInput = Pair(password, false))
+        if (state is LoginScreen.InitState) {
+            _loginState.value = state.copy(password = password)
         }
     }
 
     // A placeholder username validation check
     private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
-        } else {
-            username.isNotBlank()
-        }
+        return Patterns.EMAIL_ADDRESS.matcher(username).matches() && username.isNotBlank()
     }
 
     // A placeholder password validation check
@@ -52,12 +57,15 @@ class LoginViewModel : ViewModel() {
     }
 }
 
-sealed class LoginScreen {
-    object Loading : LoginScreen()
+sealed class LoginScreen(open val email: String, open val password: String) {
+    data class InitState(override val email: String, override val password: String) :
+        LoginScreen(email, password)
+
+    object Loading : LoginScreen("", "")
     data class FormInput(
         val emailInput: Pair<String, Boolean>,
         val passwordInput: Pair<String, Boolean>
-    ) : LoginScreen() {
+    ) : LoginScreen(emailInput.first, passwordInput.first) {
         val isValidForm get() = emailInput.second && passwordInput.second
     }
 }
