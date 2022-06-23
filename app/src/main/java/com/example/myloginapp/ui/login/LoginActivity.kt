@@ -1,5 +1,6 @@
 package com.example.myloginapp.ui.login
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +10,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.myloginapp.R
 import com.example.myloginapp.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
@@ -33,7 +35,9 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.loginState.observe(this@LoginActivity, {
             processLoginScreen(it)
         })
+        
         username.afterTextChanged {
+            loginViewModel.resetState()
             loginViewModel.changeEmail(
                 username.text.toString()
             )
@@ -41,6 +45,7 @@ class LoginActivity : AppCompatActivity() {
 
         password.apply {
             afterTextChanged {
+                loginViewModel.resetState()
                 loginViewModel.changePassword(
                     password.text.toString()
                 )
@@ -65,26 +70,32 @@ class LoginActivity : AppCompatActivity() {
     private fun processLoginScreen(loginScreen: LoginScreen?) {
         when (loginScreen) {
             is LoginScreen.InitState -> {
+                resetErrorState()
             }
             is LoginScreen.FormInput -> processUIFormInput(loginScreen)
-            LoginScreen.Loading -> TODO()
-            null -> TODO()
+            LoginScreen.Loading -> TODO("Create loading state to handle it here")
+            null -> TODO("Handle null state")
         }
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun resetErrorState(){
+        binding.username.background = getDrawable(R.drawable.editext_base_background)
+        binding.password.background = getDrawable(R.drawable.editext_base_background)
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
     private fun processUIFormInput(formInput: LoginScreen.FormInput) {
         binding.loading.visibility = View.INVISIBLE
 
         when (formInput.emailInput.second) {
-            false -> binding.username.error = "error email"
-            else -> {}
+            false -> binding.username.background = getDrawable(R.drawable.editext_error_background)
+            else ->{}
         }
         when (formInput.passwordInput.second) {
-            false -> binding.password.error = "error password"
-            else -> {}
+            false -> binding.password.background = getDrawable(R.drawable.editext_error_background)
+            else ->{}
         }
-
-        loginViewModel.resetState()
 
         if(formInput.isValidForm){
             Toast.makeText(applicationContext,"Login successful",Toast.LENGTH_LONG).show()

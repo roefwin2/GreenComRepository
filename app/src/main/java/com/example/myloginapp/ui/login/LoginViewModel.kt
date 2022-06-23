@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.regex.Pattern
 
-const val PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{4,}$"
+const val PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-_=])(?=\\S+$).{4,}$"
 class LoginViewModel : ViewModel() {
 
     private val _loginState = MutableLiveData<LoginScreen>(LoginScreen.InitState("", ""))
