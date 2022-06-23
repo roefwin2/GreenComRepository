@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="GreenButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:backgroundTint">#46c966</item>
+    </style>
+</resources>

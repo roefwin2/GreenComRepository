@@ -1,6 +1,8 @@
 package com.example.myloginapp.ui.login
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,11 +14,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.myloginapp.R
 import com.example.myloginapp.databinding.ActivityLoginBinding
+import com.example.myloginapp.utils.LocaleUtil
+import java.util.*
+import android.view.animation.DecelerateInterpolator
+
+import android.view.animation.AlphaAnimation
+
+import android.view.animation.Animation
+import android.view.animation.AnimationSet
+
+
+
+
+
+
+
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
     private lateinit var binding: ActivityLoginBinding
+
+    var local = Locale.FRANCE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,13 +48,37 @@ class LoginActivity : AppCompatActivity() {
         val login = binding.login
         val loading = binding.loading
 
+        binding.textView?.text = getString(R.string.welcome_msg)
+
+        // create animation
+        val fadeIn: Animation = AlphaAnimation(0f,1f)
+        fadeIn.interpolator = DecelerateInterpolator() //add this
+        fadeIn.duration = 6000
+
+        val animation = AnimationSet(false) //change to false
+        animation.addAnimation(fadeIn)
+
+        username.animation = animation
+        password.animation = animation
+
+        password.animate().withStartAction {
+            username.animate().start()
+        }
+
+        val languageBtn = binding.languageBtn
+
+        languageBtn?.setOnClickListener {
+            updateAppLocale("en")
+            recreate()
+        }
+
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
 
         loginViewModel.loginState.observe(this@LoginActivity, {
             processLoginScreen(it)
         })
-        
+
         username.afterTextChanged {
             loginViewModel.resetState()
             loginViewModel.changeEmail(
@@ -67,6 +110,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateAppLocale(locale: String) {
+        LocaleUtil.applyLocalizedContext(applicationContext, locale)
+    }
+
     private fun processLoginScreen(loginScreen: LoginScreen?) {
         when (loginScreen) {
             is LoginScreen.InitState -> {
@@ -79,7 +126,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private fun resetErrorState(){
+    private fun resetErrorState() {
         binding.username.background = getDrawable(R.drawable.editext_base_background)
         binding.password.background = getDrawable(R.drawable.editext_base_background)
     }
@@ -90,16 +137,23 @@ class LoginActivity : AppCompatActivity() {
 
         when (formInput.emailInput.second) {
             false -> binding.username.background = getDrawable(R.drawable.editext_error_background)
-            else ->{}
+            else -> {
+            }
         }
         when (formInput.passwordInput.second) {
             false -> binding.password.background = getDrawable(R.drawable.editext_error_background)
-            else ->{}
+            else -> {
+            }
         }
 
-        if(formInput.isValidForm){
-            Toast.makeText(applicationContext,"Login successful",Toast.LENGTH_LONG).show()
+        if (formInput.isValidForm) {
+            Toast.makeText(applicationContext, "Login successful", Toast.LENGTH_LONG).show()
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        applyOverrideConfiguration(LocaleUtil.getLocalizedConfiguration(local))
+        super.attachBaseContext(newBase)
     }
 }
 

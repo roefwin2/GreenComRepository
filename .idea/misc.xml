@@ -3,9 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable-hdpi/login_button_background.xml" value="0.26614583333333336" />
         <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.21354166666666666" />
         <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable/editext_base_background.xml" value="0.10555555555555556" />
         <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable/editext_error_background.xml" value="0.17760416666666667" />
+        <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable/language_button_background.xml" value="0.26614583333333336" />
+        <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/drawable/login_button_background.xml" value="0.14322916666666666" />
         <entry key="..\:/Users/regis/Documents/GreenCom/GreenComRepository/app/src/main/res/layout/activity_login.xml" value="0.25" />
       </map>
     </option>
