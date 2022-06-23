@@ -6,6 +6,6 @@
     <string name="action_sign_in">Login</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome_msg">Welcome</string>
-    <string name="login_msg">Please login or register</string>
+    <string name="login_msg">Please login to continue</string>
     <string name="language_btn">English</string>
 </resources>

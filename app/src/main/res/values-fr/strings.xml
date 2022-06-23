@@ -7,6 +7,6 @@
     <string name="action_sign_in">Connexion</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome_msg">Bienvenue</string>
-    <string name="login_msg">Connectez-vous ou créez un compte</string>
+    <string name="login_msg">Connectez-vous pour continuer</string>
     <string name="language_btn">Français</string>
 </resources>
