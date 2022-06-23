@@ -4,7 +4,9 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.regex.Pattern
 
+const val PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{4,}$"
 class LoginViewModel : ViewModel() {
 
     private val _loginState = MutableLiveData<LoginScreen>(LoginScreen.InitState("", ""))
@@ -53,7 +55,8 @@ class LoginViewModel : ViewModel() {
 
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 8
+        val pattern = Pattern.compile(PASSWORD_PATTERN)
+        return pattern.matcher(password).matches() && password.isNotBlank()
     }
 }
 
