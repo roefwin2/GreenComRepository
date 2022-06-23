@@ -2,11 +2,15 @@ package com.example.myloginapp.ui.login
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.AnimationSet
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
@@ -14,20 +18,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.myloginapp.R
 import com.example.myloginapp.databinding.ActivityLoginBinding
+import com.example.myloginapp.preferences.Prefs
 import com.example.myloginapp.utils.LocaleUtil
 import java.util.*
-import android.view.animation.DecelerateInterpolator
-
-import android.view.animation.AlphaAnimation
-
-import android.view.animation.Animation
-import android.view.animation.AnimationSet
-
-
-
-
-
-
 
 
 class LoginActivity : AppCompatActivity() {
@@ -35,7 +28,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var loginViewModel: LoginViewModel
     private lateinit var binding: ActivityLoginBinding
 
-    var local = Locale.FRANCE
+    lateinit var localPref: Prefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +41,8 @@ class LoginActivity : AppCompatActivity() {
         val login = binding.login
         val loading = binding.loading
 
-        binding.textView?.text = getString(R.string.welcome_msg)
-
         // create animation
-        val fadeIn: Animation = AlphaAnimation(0f,1f)
+        val fadeIn: Animation = AlphaAnimation(0f, 1f)
         fadeIn.interpolator = DecelerateInterpolator() //add this
         fadeIn.duration = 6000
 
@@ -68,16 +59,27 @@ class LoginActivity : AppCompatActivity() {
         val languageBtn = binding.languageBtn
 
         languageBtn?.setOnClickListener {
-            updateAppLocale("en")
+            if (localPref.intExamplePref == "fr") {
+                localPref.intExamplePref = "en"
+                LocaleUtil.setLocale(applicationContext,"en")
+
+            } else {
+                localPref.intExamplePref = "fr"
+                LocaleUtil.setLocale(applicationContext,"fr")
+            }
             recreate()
         }
 
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-            .get(LoginViewModel::class.java)
+            .get(
+                LoginViewModel::
+                class.java
+            )
 
-        loginViewModel.loginState.observe(this@LoginActivity, {
-            processLoginScreen(it)
-        })
+        loginViewModel.loginState.observe(this@LoginActivity,
+            {
+                processLoginScreen(it)
+            })
 
         username.afterTextChanged {
             loginViewModel.resetState()
@@ -87,6 +89,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         password.apply {
+
             afterTextChanged {
                 loginViewModel.resetState()
                 loginViewModel.changePassword(
@@ -108,10 +111,6 @@ class LoginActivity : AppCompatActivity() {
                 loginViewModel.login()
             }
         }
-    }
-
-    private fun updateAppLocale(locale: String) {
-        LocaleUtil.applyLocalizedContext(applicationContext, locale)
     }
 
     private fun processLoginScreen(loginScreen: LoginScreen?) {
@@ -152,7 +151,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun attachBaseContext(newBase: Context) {
-        applyOverrideConfiguration(LocaleUtil.getLocalizedConfiguration(local))
+        localPref = Prefs(newBase)
+        val local = localPref.intExamplePref
+        applyOverrideConfiguration(LocaleUtil.getLocalizedConfiguration(Locale(local)))
         super.attachBaseContext(newBase)
     }
 }

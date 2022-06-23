@@ -1,5 +1,6 @@
 package com.example.myloginapp.utils
 
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -10,32 +11,11 @@ import java.util.*
 
 /**
  * Helper for use the local from : https://medium.com/swlh/the-all-in-one-guide-for-changing-app-locale-dynamically-in-android-kotlin-d2506e5535d0
+ * https://stackoverflow.com/questions/65662126/kotlin-how-to-change-the-locale
  */
 
 class LocaleUtil  {
     companion object {
-        val supportedLocales = listOf("en", "fr")
-        const val OPTION_PHONE_LANGUAGE = "sys_def"
-
-        /**
-         * returns the locale to use depending on the preference value
-         * when preference value = "sys_def" returns the locale of current system
-         * else it returns the locale code e.g. "en", "bn" etc.
-         */
-        private fun getLocaleFromPrefCode(prefCode: String): Locale{
-            val localeCode = if(prefCode != OPTION_PHONE_LANGUAGE) {
-                prefCode
-            } else {
-                val systemLang = ConfigurationCompat.getLocales(Resources.getSystem().configuration).get(0)?.language
-                if(systemLang in supportedLocales){
-                    systemLang
-                } else {
-                    "en"
-                }
-            }
-            return Locale(localeCode)
-        }
-
 
         fun getLocalizedConfiguration(locale: Locale): Configuration {
             val config = Configuration()
@@ -53,23 +33,43 @@ class LocaleUtil  {
         }
 
 
-        fun applyLocalizedContext(baseContext: Context, prefLocaleCode: String) {
-            val currentLocale = getLocaleFromPrefCode(prefLocaleCode)
-            val baseLocale = getLocaleFromConfiguration(baseContext.resources.configuration)
-            Locale.setDefault(currentLocale)
-            if (!baseLocale.toString().equals(currentLocale.toString(), ignoreCase = true)) {
-                val config = getLocalizedConfiguration(currentLocale)
-                baseContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
+
+        fun setLocale(context: Context, language: String): Context {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return updateResources(context, language)
             }
+
+            return updateResourcesLegacy(context, language)
+
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        private fun updateResources(context: Context, language: String): Context {
+            val locale = Locale(language)
+            Locale.setDefault(locale)
+
+            val configuration = context.resources.configuration
+            configuration.setLocale(locale)
+            configuration.setLayoutDirection(locale)
+
+            return context.createConfigurationContext(configuration)
         }
 
         @Suppress("DEPRECATION")
-        private fun getLocaleFromConfiguration(configuration: Configuration): Locale {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                configuration.locales.get(0)
-            } else {
-                configuration.locale
-            }
+        private fun updateResourcesLegacy(context: Context, language: String): Context {
+            val locale = Locale(language)
+            Locale.setDefault(locale)
+
+            val resources = context.resources
+
+            val configuration = resources.configuration
+            configuration.locale = locale
+            configuration.setLayoutDirection(locale)
+
+            resources.updateConfiguration(configuration, resources.displayMetrics)
+
+            return context
         }
 
     }
